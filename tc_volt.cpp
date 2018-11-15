@@ -1,4 +1,9 @@
+#ifndef TC_SIM
 #include <Adafruit_MAX31856.h>
+#else
+#include "tc_sim.h"
+extern serial Serial;
+#endif
 
 // Use software SPI: CS, DI, DO, CLK
 Adafruit_MAX31856 max = Adafruit_MAX31856(10, 11, 12, 13);

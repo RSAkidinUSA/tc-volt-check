@@ -1,4 +1,4 @@
-APP = tc_sim
+APP = tc_sim.app
 CPPFLAGS += -Wall -Werror -DTC_SIM
 CC = g++
 

@@ -51,9 +51,11 @@ void Adafruit_MAX31856::setThermocoupleType(int t) {
 }
 
 /* 1 in RAND_FREQ times the value will be random */
-#define RAND_FREQ 4
+#define RAND_START_FREQ	10
+#define RAND_STOP_FREQ	4
 
 float Adafruit_MAX31856::readThermocoupleTemperature(void) {
+	static bool useRandom = false;
 	float f;
 	char junk;
 	if (inFile) {
@@ -74,9 +76,15 @@ float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 		}
 
 		/* Randomly set it to a random value */
-		if (!(rand() % RAND_FREQ)) {
+		if (useRandom) {
 			f = frand();
+			if (!(rand() % RAND_STOP_FREQ)) {
+				useRandom = false;
+			}
+		} else if (!(rand() % RAND_START_FREQ)) {
+			useRandom = true;
 		}
+		
 		
 	} else {
 		cout << "Not OK\n";

@@ -10,9 +10,7 @@ std::ifstream inFile;
 
 int main (int argc, char **argv) {
 	if (argc >= 2) {
-		cout << "1\n";
 		max.setSrc((char *)argv[1]);
-		cout << "2\n";
 	} else {
 		cout << "Usage: " << argv[0] << " datafile" << endl;
 		return 1;
@@ -35,12 +33,15 @@ void Adafruit_MAX31856::setSrc(char *filename) {
 	if (filename) {
 		strncpy(src, filename, FILE_NAME_MAX - 1);
 		inFile.open(src, std::ifstream::in);
+	} else {
+		cout << "Unable to open file\n";
+		exit(1);
 	}
 	srand(time(NULL));
 }
 
 void Adafruit_MAX31856::begin(void) {
-	cout << "Began" << endl;
+	// cout << "Began" << endl;
 }
 
 uint8_t Adafruit_MAX31856::readFault(void) {
@@ -66,47 +67,40 @@ float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 	static int count = 0, randCount = 0, randCycles = 0;
 	float f;
 	char junk;
-	if (inFile) {
-		/* read in next value from file */
-		inFile >> f;
-		
-		/* if bad value skip it */
-		while (inFile.fail()) { 
+	/* read in next value from file */
+	inFile >> f;
+	
+	/* if bad value skip it */
+	while (inFile.fail()) { 
+		inFile.clear();
+		inFile >> junk;
+		/* If file ends restart */
+		if (inFile.eof()) { 
 			inFile.clear();
-			inFile >> junk;
-			/* If file ends restart */
-			if (inFile.eof()) { 
-				inFile.clear();
-				inFile.close();
-				inFile.open(src, std::ifstream::in);
-			}
-			inFile >> f;
+			inFile.close();
+			exit(0);
 		}
+		inFile >> f;
+	}
 
-		/* Randomly set it to a random value */
-		if (useRandom) {
-			f = vrand(avg);
-			if (randCount == RAND_LONG_NUM - 1) {
-				if (++randCycles >= RAND_CYCLES_MAX) {
-					useRandom = false;
-				}
-			} else if (!(rand() % RAND_STOP_FREQ)) {
+	/* Randomly set it to a random value */
+	if (useRandom) {
+		f = vrand(avg);
+		if (randCount == RAND_LONG_NUM - 1) {
+			if (++randCycles >= RAND_CYCLES_MAX) {
 				useRandom = false;
 			}
-		} else if (!(rand() % RAND_START_FREQ)) {
-			useRandom = true;
-			randCount++;
-			randCount %= RAND_LONG_NUM;
-			randCycles = 0;
-		} else {
-			count++;
-			avg = avg + (f - avg) / count;
+		} else if (!(rand() % RAND_STOP_FREQ)) {
+			useRandom = false;
 		}
-		
-		
+	} else if (!(rand() % RAND_START_FREQ)) {
+		useRandom = true;
+		randCount++;
+		randCount %= RAND_LONG_NUM;
+		randCycles = 0;
 	} else {
-		cout << "Not OK\n";
-		f = vrand(0);
+		count++;
+		avg = avg + (f - avg) / count;
 	}
 	return f;
 }

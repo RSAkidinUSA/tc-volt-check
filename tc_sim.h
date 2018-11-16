@@ -2,6 +2,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <iostream>
+#include <math.h>
 
 using std::cout;
 using std::endl;
@@ -21,10 +22,8 @@ using std::endl;
 
 #define delay(a) usleep(a * 1000)
 
-/* random float generation */
-#define LO -100.00
-#define HI 100.00
-#define frand() LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)))
+/* Random float from 0.0 - 1.0, non-inclusive */
+#define frand() (static_cast <float> (rand() - 1) / static_cast <float> (RAND_MAX));
 
 class Adafruit_MAX31856 {
 	char src[FILE_NAME_MAX];
@@ -48,3 +47,6 @@ public:
 /* Functions */
 void setup();
 void loop();
+
+/* random voltage based on avg x */
+float vrand(float x);

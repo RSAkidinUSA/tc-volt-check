@@ -14,7 +14,8 @@ int main (int argc, char **argv) {
 		max.setSrc((char *)argv[1]);
 		cout << "2\n";
 	} else {
-		max.setSrc(NULL);
+		cout << "Usage: " << argv[0] << " datafile" << endl;
+		return 1;
 	}
 	setup();
 	while (1) {
@@ -50,12 +51,19 @@ void Adafruit_MAX31856::setThermocoupleType(int t) {
 
 }
 
-/* 1 in RAND_FREQ times the value will be random */
+/* how often to start random */
 #define RAND_START_FREQ	10
+/* How long to stay random */
 #define RAND_STOP_FREQ	4
+/* How frequently to stay random for a longer interval */
+#define RAND_LONG_NUM	4
+/* How long to stay random for long interval */
+#define RAND_CYCLES_MAX	100
 
 float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 	static bool useRandom = false;
+	static float avg = 0;
+	static int count = 0, randCount = 0, randCycles = 0;
 	float f;
 	char junk;
 	if (inFile) {
@@ -77,18 +85,28 @@ float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 
 		/* Randomly set it to a random value */
 		if (useRandom) {
-			f = frand();
-			if (!(rand() % RAND_STOP_FREQ)) {
+			f = vrand(avg);
+			if (randCount == RAND_LONG_NUM - 1) {
+				if (++randCycles >= RAND_CYCLES_MAX) {
+					useRandom = false;
+				}
+			} else if (!(rand() % RAND_STOP_FREQ)) {
 				useRandom = false;
 			}
 		} else if (!(rand() % RAND_START_FREQ)) {
 			useRandom = true;
+			randCount++;
+			randCount %= RAND_LONG_NUM;
+			randCycles = 0;
+		} else {
+			count++;
+			avg = avg + (f - avg) / count;
 		}
 		
 		
 	} else {
 		cout << "Not OK\n";
-		f = frand();
+		f = vrand(0);
 	}
 	return f;
 }
@@ -105,4 +123,10 @@ void serial::println(float f) {
 
 void serial::println(const char *c) {
 	cout << c << endl;
+}
+
+/* frand function */
+float vrand(float x) {
+	float y = frand();
+	return (x - (0.0620762 * log(-1 + 1/y)));
 }

@@ -20,7 +20,11 @@ using std::endl;
 
 #define FILE_NAME_MAX	64
 
+#ifdef DELAY_FOR_REAL
 #define delay(a) usleep(a * 1000)
+#else
+#define delay(a) asm("nop")
+#endif
 
 class Adafruit_MAX31856 {
 	char src[FILE_NAME_MAX];

@@ -61,10 +61,24 @@ void Adafruit_MAX31856::setThermocoupleType(int t) {
 /* How long to stay random for long interval */
 #define RAND_CYCLES_MAX	100
 
+
+/* Random float from 0.0 - 1.0, non-inclusive */
+#define frand() (static_cast <float> (rand() - 1) / static_cast <float> (RAND_MAX))
+
+/* Random upper bound generation between UB_MAX and UB_MIN */
+#define UB_MAX 100.00
+#define UB_MIN 98.00
+#define ubrand() (UB_MIN + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(UB_MAX - UB_MIN))))
+
+/* Random upper bound generation between UB_MAX and UB_MIN */
+#define LB_MAX 2.00
+#define LB_MIN 0.00
+#define lbrand() (LB_MIN + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(LB_MAX - LB_MIN))))
+
 float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 	static bool useRandom = false;
-	static float avg = 0;
-	static int count = 0, randCount = 0, randCycles = 0;
+	static bool LBnotUB = false;
+	static int randCount = 0, randCycles = 0;
 	float f;
 	char junk;
 	/* read in next value from file */
@@ -85,7 +99,8 @@ float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 
 	/* Randomly set it to a random value */
 	if (useRandom) {
-		f = vrand(avg);
+		/* use upper or lower bound based on selection */
+		f = LBnotUB ? lbrand() : ubrand();
 		if (randCount == RAND_LONG_NUM - 1) {
 			if (++randCycles >= RAND_CYCLES_MAX) {
 				useRandom = false;
@@ -95,12 +110,10 @@ float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 		}
 	} else if (!(rand() % RAND_START_FREQ)) {
 		useRandom = true;
+		LBnotUB = (bool) (rand() % 2);
 		randCount++;
 		randCount %= RAND_LONG_NUM;
 		randCycles = 0;
-	} else {
-		count++;
-		avg = avg + (f - avg) / count;
 	}
 	return f;
 }
@@ -117,10 +130,4 @@ void serial::println(float f) {
 
 void serial::println(const char *c) {
 	cout << c << endl;
-}
-
-/* frand function */
-float vrand(float x) {
-	float y = frand();
-	return (x - (0.0620762 * log(-1 + 1/y)));
 }

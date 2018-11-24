@@ -22,9 +22,6 @@ using std::endl;
 
 #define delay(a) usleep(a * 1000)
 
-/* Random float from 0.0 - 1.0, non-inclusive */
-#define frand() (static_cast <float> (rand() - 1) / static_cast <float> (RAND_MAX));
-
 class Adafruit_MAX31856 {
 	char src[FILE_NAME_MAX];
 public:
@@ -47,6 +44,3 @@ public:
 /* Functions */
 void setup();
 void loop();
-
-/* random voltage based on avg x */
-float vrand(float x);

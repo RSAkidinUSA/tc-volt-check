@@ -115,6 +115,10 @@ float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 		randCount %= RAND_LONG_NUM;
 		randCycles = 0;
 	}
+
+	/* output the actual value to stderr */
+	cerr << f << endl;
+	
 	return f;
 }
 

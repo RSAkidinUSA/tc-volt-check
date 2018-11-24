@@ -5,10 +5,19 @@
 extern serial Serial;
 #endif
 
+/* Maximum and minimum valid temperatures */
+#define MAX_VALID_TEMP 95.00
+#define MIN_VALID_TEMP 5.00
+
 // Use software SPI: CS, DI, DO, CLK
 Adafruit_MAX31856 max = Adafruit_MAX31856(10, 11, 12, 13);
 // use hardware SPI, just pass in the CS pin
 //Adafruit_MAX31856 max = Adafruit_MAX31856(10);
+
+/* correction values */
+#define NUM_VALS 20
+float vals[NUM_VALS], sum;
+int head, count;
 
 void setup() {
   Serial.begin(115200);
@@ -18,7 +27,7 @@ void setup() {
 
   max.setThermocoupleType(MAX31856_TCTYPE_K);
 
-/*
+  /*
   Serial.print("Thermocouple type: ");
   switch ( max.getThermocoupleType() ) {
     case MAX31856_TCTYPE_B: Serial.println("B Type"); break;
@@ -35,13 +44,32 @@ void setup() {
   }
   */
 
+  /* correction values */
+  sum = 0;
+  head = 0;
+  count = 0;
+  for (int i = 0; i < NUM_VALS; i++) {
+    vals[i] = 0;
+  }
+
 }
 
 void loop() {
- // Serial.print("Cold Junction Temp: "); Serial.println(max.readCJTemperature());
-
- // Serial.print("Thermocouple Temp: "); Serial.println(max.readThermocoupleTemperature());
- Serial.println(max.readThermocoupleTemperature());
+  float temp;
+  /* remove the oldest value from the list */
+  if (count >= NUM_VALS) {
+    sum -= vals[head];
+  }
+  temp = max.readThermocoupleTemperature();
+  if (temp < MAX_VALID_TEMP && temp > MIN_VALID_TEMP) {
+    vals[head] = temp;
+  } else {
+    vals[head] = (float) (sum / (float) count);
+  }
+  sum += vals[head];
+  head = (head + 1) % NUM_VALS;
+  count = (count < NUM_VALS) ? count + 1 : count;
+  Serial.println((float) (sum / (float) count));
 
   //Serial.print("Thermocouple Volt: "); Serial.println(analogRead(A0));
   // Check and print any faults

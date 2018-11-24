@@ -5,6 +5,7 @@
 #include <math.h>
 
 using std::cout;
+using std::cerr;
 using std::endl;
 
 #define MAX31856_FAULT_CJRANGE	0x01

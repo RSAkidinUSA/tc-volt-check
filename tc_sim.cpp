@@ -25,7 +25,8 @@ int main (int argc, char **argv) {
 
 /* Thermocouple functions */
 
-Adafruit_MAX31856::Adafruit_MAX31856(int pin_cs, int pin_di, int pin_do, int pin_clk) {
+Adafruit_MAX31856::Adafruit_MAX31856(int pin_cs, int pin_di, int pin_do, 
+		int pin_clk) {
 
 }
 
@@ -64,12 +65,14 @@ void Adafruit_MAX31856::setThermocoupleType(int t) {
 /* Random upper bound generation between UB_MAX and UB_MIN */
 #define UB_MAX 100.00
 #define UB_MIN 98.00
-#define ubrand() (UB_MIN + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(UB_MAX - UB_MIN))))
+#define ubrand() (UB_MIN + static_cast <float> (rand()) / \
+		(static_cast <float> (RAND_MAX/(UB_MAX - UB_MIN))))
 
 /* Random upper bound generation between UB_MAX and UB_MIN */
 #define LB_MAX 2.00
 #define LB_MIN 0.00
-#define lbrand() (LB_MIN + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(LB_MAX - LB_MIN))))
+#define lbrand() (LB_MIN + static_cast <float> (rand()) / \
+		(static_cast <float> (RAND_MAX/(LB_MAX - LB_MIN))))
 
 float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 	static bool useRandom = false;

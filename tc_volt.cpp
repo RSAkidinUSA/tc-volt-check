@@ -1,9 +1,19 @@
+#include <stdlib.h>
 #ifndef TC_SIM
 #include <Adafruit_MAX31856.h>
+/* Random float from 0.0 - 1.0, non-inclusive */
+#define frand() (static_cast <float> (rand() - 1) / static_cast <float> (RAND_MAX))
 #else
 #include "tc_sim.h"
 extern serial Serial;
 #endif
+
+
+/* nrand function for normalized random value*/
+float nrand(float x) {
+  float y = frand();
+  return (x - (0.0620762 * log(-1 + 1/y)));
+}
 
 /* Maximum and minimum valid temperatures */
 #define MAX_VALID_TEMP 95.00
@@ -21,6 +31,7 @@ int head, count;
 
 void setup() {
   Serial.begin(115200);
+  srand(0);
   //Serial.println("MAX31856 thermocouple test");
 
   max.begin();
@@ -56,19 +67,20 @@ void setup() {
 
 void loop() {
   float temp;
+  temp = max.readThermocoupleTemperature();
+  if (temp >= MAX_VALID_TEMP || temp <= MIN_VALID_TEMP) {
+    temp = nrand((float) (sum / (float) count));
+  }
   /* remove the oldest value from the list */
   if (count >= NUM_VALS) {
     sum -= vals[head];
   }
-  temp = max.readThermocoupleTemperature();
-  if (temp < MAX_VALID_TEMP && temp > MIN_VALID_TEMP) {
-    vals[head] = temp;
-  } else {
-    vals[head] = (float) (sum / (float) count);
-  }
+  vals[head] = temp;
   sum += vals[head];
   head = (head + 1) % NUM_VALS;
-  count = (count < NUM_VALS) ? count + 1 : count;
+  if (count < NUM_VALS) {
+    count++;
+  }
   Serial.println((float) (sum / (float) count));
 
   //Serial.print("Thermocouple Volt: "); Serial.println(analogRead(A0));

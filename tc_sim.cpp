@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <stdlib.h>
-#include <time.h>
 
 serial Serial;
 extern Adafruit_MAX31856 max;
@@ -16,6 +15,8 @@ int main (int argc, char **argv) {
 		return 1;
 	}
 	setup();
+	/* re-randomize random for simulation */
+	srand(time(NULL));
 	while (1) {
 		loop();
 	}
@@ -37,7 +38,6 @@ void Adafruit_MAX31856::setSrc(char *filename) {
 		cout << "Unable to open file\n";
 		exit(1);
 	}
-	srand(time(NULL));
 }
 
 void Adafruit_MAX31856::begin(void) {
@@ -60,10 +60,6 @@ void Adafruit_MAX31856::setThermocoupleType(int t) {
 #define RAND_LONG_NUM	4
 /* How long to stay random for long interval */
 #define RAND_CYCLES_MAX	100
-
-
-/* Random float from 0.0 - 1.0, non-inclusive */
-#define frand() (static_cast <float> (rand() - 1) / static_cast <float> (RAND_MAX))
 
 /* Random upper bound generation between UB_MAX and UB_MIN */
 #define UB_MAX 100.00
@@ -118,7 +114,7 @@ float Adafruit_MAX31856::readThermocoupleTemperature(void) {
 
 	/* output the actual value to stderr */
 	cerr << f << endl;
-	
+
 	return f;
 }
 

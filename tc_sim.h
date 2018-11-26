@@ -46,6 +46,9 @@ public:
 	void println(const char *c);
 };
 
+/* Random float from 0.0 - 1.0, non-inclusive */
+#define frand() (static_cast <float> (rand() - 1) / static_cast <float> (RAND_MAX))
+
 /* Functions */
 void setup();
 void loop();
